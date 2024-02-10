@@ -5,7 +5,7 @@ defmodule DiscussWeb.Router do
     plug :accepts, ["html"]
     plug :fetch_session
     plug :fetch_live_flash
-    plug :put_root_layout, html: {DiscussWeb.Layouts, :root}
+    plug :put_root_layout, html: {DiscussWeb.Layouts, :app}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
   end
@@ -18,6 +18,13 @@ defmodule DiscussWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :home
+    get "/hello", PageController, :hello
+  end
+
+  scope "/api" , DiscussWeb do
+    pipe_through :api
+    resources "/users", UserController, except: [:new, :edit]
+    post "/users/create", UserController, :store
   end
 
   # Other scopes may use custom stacks.

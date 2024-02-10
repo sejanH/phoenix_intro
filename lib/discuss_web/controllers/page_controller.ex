@@ -4,6 +4,11 @@ defmodule DiscussWeb.PageController do
   def home(conn, _params) do
     # The home page is often custom made,
     # so skip the default app layout.
-    render(conn, :home, layout: false)
+    render(conn, :home, page_title: "Home", layout: false)
+  end
+
+  def hello(conn, _params) do
+    page_title ="Hello"
+    render(conn, :hello, page_title: page_title, layout: false)
   end
 end
