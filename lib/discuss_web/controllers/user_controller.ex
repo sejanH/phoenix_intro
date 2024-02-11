@@ -1,7 +1,6 @@
 defmodule DiscussWeb.UserController do
   use DiscussWeb, :controller
 
-  alias Discuss.Repo
   alias Discuss.Users
   alias Discuss.Users.User
 
@@ -19,12 +18,6 @@ defmodule DiscussWeb.UserController do
       |> put_resp_header("location", ~p"/api/users/#{user}")
       |> render(:show, user: user)
     end
-  end
-
-  def store(conn, _params) do
-    user = User |> Repo.all()
-    conn
-    |> render("user_json",user: user)
   end
 
   def show(conn, %{"id" => id}) do

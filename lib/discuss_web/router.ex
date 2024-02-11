@@ -21,10 +21,11 @@ defmodule DiscussWeb.Router do
     get "/hello", PageController, :hello
   end
 
-  scope "/api" , DiscussWeb do
+  scope "/api", DiscussWeb do
     pipe_through :api
     resources "/users", UserController, except: [:new, :edit]
-    post "/users/create", UserController, :store
+
+    resources "/posts", PostController, except: [:new, :edit]
   end
 
   # Other scopes may use custom stacks.

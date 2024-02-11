@@ -8,7 +8,7 @@ defmodule DiscussWeb.PageController do
   end
 
   def hello(conn, _params) do
-    page_title ="Hello"
-    render(conn, :hello, page_title: page_title, layout: false)
+    page_title = "Hello"
+    render(conn, :hello, layout: false, page_title: page_title)
   end
 end

@@ -15,17 +15,15 @@ defmodule DiscussWeb.UserJSON do
     %{data: data(user)}
   end
 
-  def store(%{user: user}) do
-    %{data: data(user)}
-  end
-
   defp data(%User{} = user) do
     %{
       id: user.id,
       name: user.name,
       email: user.email,
+      phone_no: user.phone_no,
       password: user.password,
-      is_active: user.is_active
+      is_active: user.is_active,
+      joined: DateTime.to_naive(user.inserted_at) |> NaiveDateTime.to_string()
     }
   end
 end
