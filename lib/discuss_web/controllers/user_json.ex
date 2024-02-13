@@ -20,10 +20,10 @@ defmodule DiscussWeb.UserJSON do
       id: user.id,
       name: user.name,
       email: user.email,
-      phone_no: user.phone_no,
-      password: user.password,
+      phone_no: "+880" <> Integer.to_string(user.phone_no),
       is_active: user.is_active,
-      joined: DateTime.to_naive(user.inserted_at) |> NaiveDateTime.to_string()
+      joined: DateTime.to_naive(user.inserted_at) |> NaiveDateTime.to_string(),
+      posts: for(post <- user.posts, do: post |> DiscussWeb.PostJSON.data())
     }
   end
 end

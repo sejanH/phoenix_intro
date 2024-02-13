@@ -7,6 +7,7 @@ defmodule Discuss.Users do
   alias Discuss.Repo
 
   alias Discuss.Users.User
+  alias Discuss.Posts.Post
 
   @doc """
   Returns the list of users.
@@ -35,7 +36,12 @@ defmodule Discuss.Users do
       ** (Ecto.NoResultsError)
 
   """
-  def get_user!(id), do: Repo.get!(User, id)
+  def get_user!(id) do
+    User
+    |> order_by(asc: :id)
+    |> Repo.get!(id)
+    |> Repo.preload(:posts)
+  end
 
   @doc """
   Creates a user.

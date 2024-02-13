@@ -9,6 +9,7 @@ defmodule Discuss.Posts.Post do
     field :body, :string
     field :published, :boolean, default: false
     field :view_count, :integer, default: 0
+    field :author_id, :integer
 
     timestamps(type: :utc_datetime)
   end

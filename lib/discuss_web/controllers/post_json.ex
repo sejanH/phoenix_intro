@@ -15,7 +15,7 @@ defmodule DiscussWeb.PostJSON do
     %{data: data(post)}
   end
 
-  defp data(%Post{} = post) do
+  def data(%Post{} = post) do
     %{
       id: post.id,
       title: post.title,
