@@ -4,10 +4,10 @@ defmodule Discuss.Users do
   """
 
   import Ecto.Query, warn: false
+  alias Discuss.Users
   alias Discuss.Repo
 
   alias Discuss.Users.User
-  alias Discuss.Posts.Post
 
   @doc """
   Returns the list of users.
@@ -20,6 +20,7 @@ defmodule Discuss.Users do
   """
   def list_users do
     Repo.all(User)
+    |> Repo.preload(:posts)
   end
 
   @doc """
@@ -106,5 +107,34 @@ defmodule Discuss.Users do
   """
   def change_user(%User{} = user, attrs \\ %{}) do
     User.changeset(user, attrs)
+  end
+
+  @doc """
+  determine type of the input if its email or phone number
+  """
+  def determine_type(%{"identifier" => input}) do
+    (Regex.match?(~r/^[A-Za-z0-9\._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}$/, input) && "email") ||
+      "phone"
+  end
+
+  @doc """
+  Sanitize identifier input from users
+  """
+  # def sanitize_with_validate(type, attrs) do
+  #   attrs |> validate_length()
+  # end
+  @doc """
+  Login user and provide one token
+  """
+  def login_user(type, %{"identifier" => i, "password" => p}) do
+    if type === "email" do
+      query = from u in User, where: u.email == ^i
+      user = Repo.one!(query)
+      Bcrypt.verify_pass(p, user.password)
+    else
+      query = from u in User, where: u.phone_no == ^String.slice(i, -10, 10)
+      user = Repo.one!(query)
+      Bcrypt.verify_pass(p, user.password)
+    end
   end
 end

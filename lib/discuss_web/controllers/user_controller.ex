@@ -1,6 +1,7 @@
 defmodule DiscussWeb.UserController do
   use DiscussWeb, :controller
 
+  alias Discuss.Repo
   alias Discuss.Users
   alias Discuss.Users.User
 
@@ -13,6 +14,8 @@ defmodule DiscussWeb.UserController do
 
   def create(conn, %{"user" => user_params}) do
     with {:ok, %User{} = user} <- Users.create_user(user_params) do
+      user = user |> Repo.preload(:posts)
+
       conn
       |> put_status(:created)
       |> put_resp_header("location", ~p"/api/users/#{user}")

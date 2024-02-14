@@ -23,6 +23,12 @@ defmodule DiscussWeb.Router do
 
   scope "/api", DiscussWeb do
     pipe_through :api
+
+    post "/login", AuthController, :login
+  end
+
+  scope "/api", DiscussWeb do
+    pipe_through :api
     resources "/users", UserController, except: [:new, :edit]
 
     resources "/posts", PostController, except: [:new, :edit]
