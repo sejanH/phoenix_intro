@@ -3,7 +3,7 @@ defmodule Discuss.Repo.Migrations.PostsAddMoreColumn do
 
   def change do
     alter table("posts") do
-      add :author_id, references(:users, column: "id"), after: "image"
+      add :author_id, references(:users, column: "id"), after: "excerpt"
     end
   end
 end
