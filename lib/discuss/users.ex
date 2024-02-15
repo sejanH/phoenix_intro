@@ -122,7 +122,9 @@ defmodule Discuss.Users do
   # def sanitize_with_validate(type, attrs) do
   #   attrs |> validate_length()
   # end
+  def sanitize_inputs do
 
+  end
   @doc """
   Login user and provide one token
   """
