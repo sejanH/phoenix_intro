@@ -5,7 +5,7 @@ defmodule Discuss.Repo.Migrations.CreatePosts do
     create table(:posts) do
       add :title, :string, null: false
       add :slug, :string, null: false
-      add :body, :text
+      add :body, :longtext
       add :excerpt, :string, size: 500
       add :published, :boolean, default: false
       add :image, :string, size: 500
