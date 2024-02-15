@@ -4,7 +4,6 @@ defmodule Discuss.Users do
   """
 
   import Ecto.Query, warn: false
-  alias Discuss.Users
   alias Discuss.Repo
 
   alias Discuss.Users.User

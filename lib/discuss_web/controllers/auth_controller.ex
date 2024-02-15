@@ -1,9 +1,7 @@
 defmodule DiscussWeb.AuthController do
   use DiscussWeb, :controller
 
-  alias Discuss.Repo
   alias Discuss.Users
-  alias Discuss.Users.User
 
   action_fallback DiscussWeb.FallbackController
 
