@@ -119,24 +119,47 @@ defmodule Discuss.Users do
   @doc """
   Sanitize identifier input from users
   """
-  # def sanitize_with_validate(type, attrs) do
-  #   attrs |> validate_length()
-  # end
-  def sanitize_inputs do
-
+  def sanitize_with_validate(type, attrs) do
+    if type === "email" do
+      (Regex.match?(~r/^[A-Za-z0-9\._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}$/, attrs["identifier"]) &&
+         :ok) ||
+        raise "email format invalid"
+    else
+      (~r/^\+[0-9]*$/ |> Regex.match?(attrs["identifier"]) && :ok) ||
+        raise "phone number got unsupported characters"
+    end
   end
+
   @doc """
   Login user and provide one token
   """
-  def login_user(type, %{"identifier" => i, "password" => p}) do
+  def login_user(data) do
+    if data["status"] == :error do
+      raise "password missmatch"
+    else
+      %{"token" => Phoenix.Token.sign(DiscussWeb.Endpoint, "user auth",data["data"]), "user" => data["data"]}
+    end
+  end
+
+  def verify_password(type, %{"identifier" => i, "password" => p}) do
     if type === "email" do
       query = from u in User, where: u.email == ^i
       user = Repo.one!(query)
-      Bcrypt.verify_pass(p, user.password)
+
+      if Bcrypt.verify_pass(p, user.password) do
+        {status, data} = {:success, user}
+      else
+        {status, data} = {:error, user}
+      end
     else
       query = from u in User, where: u.phone_no == ^String.slice(i, -10, 10)
       user = Repo.one!(query)
-      Bcrypt.verify_pass(p, user.password)
+
+      if Bcrypt.verify_pass(p, user.password) do
+        %{"status" => :success, "data" => user}
+      else
+        %{"status" => :error, "data" => user}
+      end
     end
   end
 end
