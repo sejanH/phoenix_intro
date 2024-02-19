@@ -39,7 +39,7 @@ defmodule Discuss.Users do
   def get_user!(id) do
     User
     |> order_by(asc: :id)
-    |> Repo.get!(id)
+    |> Repo.get(id)
     |> Repo.preload(:posts)
   end
 
@@ -119,7 +119,7 @@ defmodule Discuss.Users do
   @doc """
   Sanitize identifier input from users
   """
-  def sanitize_with_validate(type, attrs) do
+  def sanitize_with_validate(attrs, type \\ "email") do
     if type === "email" do
       (Regex.match?(~r/^[A-Za-z0-9\._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}$/, attrs["identifier"]) &&
          :ok) ||
@@ -137,28 +137,49 @@ defmodule Discuss.Users do
     if data["status"] == :error do
       raise "password missmatch"
     else
-      %{"token" => Phoenix.Token.sign(DiscussWeb.Endpoint, "user auth",data["data"]), "user" => data["data"]}
+      %{
+        "token" => Phoenix.Token.sign(DiscussWeb.Endpoint, "user auth", data["data"]),
+        "user" => data["data"]
+      }
     end
   end
 
-  def verify_password(type, %{"identifier" => i, "password" => p}) do
-    if type === "email" do
-      query = from u in User, where: u.email == ^i
-      user = Repo.one!(query)
-
-      if Bcrypt.verify_pass(p, user.password) do
-        {status, data} = {:success, user}
-      else
-        {status, data} = {:error, user}
-      end
+  def verify_password(user, %{"password" => p}) do
+    if :error do
+      %{"status" => :error, "data" => nil}
     else
-      query = from u in User, where: u.phone_no == ^String.slice(i, -10, 10)
-      user = Repo.one!(query)
-
       if Bcrypt.verify_pass(p, user.password) do
         %{"status" => :success, "data" => user}
       else
         %{"status" => :error, "data" => user}
+      end
+    end
+  end
+
+  def find_user_by_type(status, %{"identifier" => i}, type \\ "email") do
+    if status != :ok do
+      raise "something is fisshy"
+    end
+
+    if type === "email" do
+      query = from u in User, where: u.email == ^i
+
+      case Repo.one(query) do
+        nil ->
+          nil
+
+        user ->
+          user
+      end
+    else
+      query = from u in User, where: u.phone_no == ^String.slice(i, -10, 10)
+
+      case Repo.one(query) do
+        nil ->
+          nil
+
+        user ->
+          user
       end
     end
   end

@@ -6,23 +6,32 @@ defmodule DiscussWeb.AuthController do
   # action_fallback DiscussWeb.FallbackController
 
   def login(conn, data) do
-    result =
+    type =
       data
       |> Users.determine_type()
-      |> Users.sanitize_with_validate(data)
-      |> Users.verify_password(data)
-      |> Users.login_user()
 
-      # IO.inspect(Regex.replace("+880" <> Integer.to_string(result["user"].phone_no), ~r{^(\d{3})(\d{3}).*(\d{3})$}, "\\1***\\3"))
-    conn
-    |> json(%{
-      "token" => result["token"],
-      "user" => %{
-        "id" => result["user"].id,
-        "name" => result["user"].name,
-        "email" => String.replace(result["user"].email, ~r/(.{4})(?=@)/, "****"),
-        "phone_no" => String.replace("+880" <> Integer.to_string(result["user"].phone_no), ~r/\d{3}/,"*", global: true)
-      }
-    })
+    case data
+         |> Users.sanitize_with_validate(type)
+         |> Users.find_user_by_type(data, type)
+         |> Users.verify_password(data)
+         |> Users.login_user() do
+      :error ->
+        conn |> put_status(401) |> json(%{"message" => "Login failed"})
+
+      result ->
+        conn
+        |> json(%{
+          "token" => result["token"],
+          "user" => %{
+            "id" => result["user"].id,
+            "name" => result["user"].name,
+            "email" => String.replace(result["user"].email, ~r/(.{4})(?=@)/, "****"),
+            "phone_no" =>
+              String.replace("+880" <> Integer.to_string(result["user"].phone_no), ~r/\d{3}/, "*",
+                global: true
+              )
+          }
+        })
+    end
   end
 end

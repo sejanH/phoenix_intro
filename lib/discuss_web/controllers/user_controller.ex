@@ -24,8 +24,13 @@ defmodule DiscussWeb.UserController do
   end
 
   def show(conn, %{"id" => id}) do
-    user = Users.get_user!(id)
-    render(conn, :show, user: user)
+    case Users.get_user!(id) do
+      nil ->
+        conn |> put_status(404) |> json(%{"message" => "Not found", "status" => 404})
+
+      user ->
+        render(conn, :show, user: user)
+    end
   end
 
   def update(conn, %{"id" => id, "user" => user_params}) do
