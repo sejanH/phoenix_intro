@@ -112,74 +112,62 @@ defmodule Discuss.Users do
   determine type of the input if its email or phone number
   """
   def determine_type(%{"identifier" => input}) do
-    (Regex.match?(~r/^[A-Za-z0-9\._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}$/, input) && "email") ||
-      "phone"
-  end
+    is_email = Regex.match?(~r/^[A-Za-z0-9\._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}$/, input)
+    is_phone = Regex.match?(~r/^\+[0-9]*$/, input)
 
-  @doc """
-  Sanitize identifier input from users
-  """
-  def sanitize_with_validate(attrs, type \\ "email") do
-    if type === "email" do
-      (Regex.match?(~r/^[A-Za-z0-9\._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}$/, attrs["identifier"]) &&
-         :ok) ||
-        raise "email format invalid"
-    else
-      (~r/^\+[0-9]*$/ |> Regex.match?(attrs["identifier"]) && :ok) ||
-        raise "phone number got unsupported characters"
+    cond do
+      is_email ->
+        {:ok, "email"}
+
+      !is_email && is_phone ->
+        {:ok, "phone"}
+
+      !is_email && !is_phone ->
+        {:error, "Email/Phone is not valid"}
     end
   end
 
   @doc """
   Login user and provide one token
   """
-  def login_user(data) do
-    if data["status"] == :error do
-      raise "password missmatch"
-    else
-      %{
-        "token" => Phoenix.Token.sign(DiscussWeb.Endpoint, "user auth", data["data"]),
-        "user" => data["data"]
-      }
+  def login_user(user) do
+    {:ok, Phoenix.Token.sign(DiscussWeb.Endpoint, "user auth", user)}
+  end
+
+  def verify_password(attrs, %{"password" => p}) do
+    case attrs do
+      {:ok, user} ->
+        if Bcrypt.verify_pass(p, user.password) do
+          {:ok, user}
+        else
+          {:error, "password not matched"}
+        end
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
-  def verify_password(user, %{"password" => p}) do
-    if :error do
-      %{"status" => :error, "data" => nil}
-    else
-      if Bcrypt.verify_pass(p, user.password) do
-        %{"status" => :success, "data" => user}
-      else
-        %{"status" => :error, "data" => user}
-      end
-    end
-  end
-
-  def find_user_by_type(status, %{"identifier" => i}, type \\ "email") do
-    if status != :ok do
-      raise "something is fisshy"
-    end
-
+  def find_user_by_type(%{"identifier" => i}, type \\ "email") do
     if type === "email" do
       query = from u in User, where: u.email == ^i
 
       case Repo.one(query) do
         nil ->
-          nil
+          {:error, "user not found"}
 
         user ->
-          user
+          {:ok, user}
       end
     else
       query = from u in User, where: u.phone_no == ^String.slice(i, -10, 10)
 
       case Repo.one(query) do
         nil ->
-          nil
+          {:error, "user not found"}
 
         user ->
-          user
+          {:ok, user}
       end
     end
   end

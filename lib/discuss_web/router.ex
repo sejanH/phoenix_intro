@@ -33,11 +33,12 @@ defmodule DiscussWeb.Router do
     pipe_through :no_auth_api
 
     post "/login", AuthController, :login
+    resources "/users", UserController, only: [:create]
   end
 
   scope "/api", DiscussWeb do
     pipe_through :api
-    resources "/users", UserController, except: [:new, :edit]
+    resources "/users", UserController, except: [:new, :edit, :create]
 
     resources "/posts", PostController, except: [:new, :edit]
   end
